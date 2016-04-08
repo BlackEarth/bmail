@@ -1,4 +1,4 @@
-# bl.emailer - a mailer class
+# bmail.emailer - a mailer class
 
 import sys, smtplib, traceback
 from email.mime.text import MIMEText

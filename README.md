@@ -1,2 +1,4 @@
 # bmail
-email library
+Black Earth email library
+
+    $ pip install bmail
