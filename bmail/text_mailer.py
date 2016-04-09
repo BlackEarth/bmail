@@ -1,13 +1,13 @@
-# bmail.emailer - a mailer class
 
 import sys, smtplib, traceback
 from email.mime.text import MIMEText
 from bl.dict import Dict
+from bl.log import Log
 
-class Emailer(Dict):
-    """create and send email using templates. Parameters (*=required):
+class TextMailer(Dict):
+    """create and send text email using templates. Parameters (*=required):
         template*       : must have a render() method that takes keyword arguments
-                            (if loader_class and Email.template_path are both given, 
+                            (if loader_class and TextMailer.template_path are both given, 
                                 template can be a relative path)
         loader_class    : the class used to load templates (defaults to tornado.template.Loader).
         Email           : parameters from the Email config.
@@ -22,7 +22,7 @@ class Emailer(Dict):
             debug       : Whether debugging is on
     """
 
-    def __init__(self, loader_class=None, loader_args={}, log=print, **Email):
+    def __init__(self, loader_class=None, loader_args={}, log=Log(), **Email):
         """set up an emailer with a particular Email config"""
         Dict.__init__(self, log=log, **Email)
         if loader_class is None:
