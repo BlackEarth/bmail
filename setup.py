@@ -1,7 +1,7 @@
 
 config = {
   "name": "bmail",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Email library",
   "url": "https://github.com/BlackEarth/bmail",
   "author": "Sean Harrison",
