@@ -29,6 +29,10 @@ class TextMailer(Dict):
             from tornado.template import Loader as loader_class
         if Email.get('template_path') is not None:
             self.loader = loader_class(Email.get('template_path'), **loader_args)
+        if self.delivery=='test' and self.default_encoding is None:
+            self.default_encoding = 'ASCII'
+        else:
+            self.default_encoding = 'UTF-8'
 
     def __repr__(self):
         return "Emailer(%r)" % (self.__file__)
@@ -44,11 +48,12 @@ class TextMailer(Dict):
         if type(r)==type(b''): r = r.decode('UTF-8')
         return r
 
-    def message(self, template=None, text=None, to_addr=None, subject=None, from_addr=None, cc=None, bcc=None, **context):
+    def message(self, template=None, text=None, to_addr=None, subject=None, from_addr=None, cc=None, bcc=None, encoding=None, **context):
         """create a MIMEText message from the msg text with the given msg args"""
+        encoding = encoding or self.default_encoding or 'UTF-8'
         if template is not None:
             text = self.render(template, to_addr=to_addr or self.to_address, from_addr=from_addr, cc=cc, bcc=bcc, **context)
-        msg = MIMEText(text)
+        msg = MIMEText(text, 'plain', encoding)
         msg['From'] = from_addr or self.from_address
         msg['Subject'] = subject
         for addr in [addr for addr in (to_addr or self.to_address or '').split(',') if addr.strip() != '']:
