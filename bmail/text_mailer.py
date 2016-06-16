@@ -42,9 +42,9 @@ class TextMailer(Dict):
         if type(template)==str and self.loader is not None:
             template = self.loader.load(template)
         try:
-            r = template.render(**context)
+            r = template.render(c=Dict(**context))
         except:
-            r = template.generate(**context)
+            r = template.generate(c=Dict(**context))
         if type(r)==type(b''): r = r.decode('UTF-8')
         return r
 
