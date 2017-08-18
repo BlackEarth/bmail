@@ -1,8 +1,9 @@
 
-import sys, smtplib, traceback
+import sys, smtplib, traceback, logging
 from email.mime.text import MIMEText
 from bl.dict import Dict
-from bl.log import Log
+
+log = logging.getLogger(__name__)
 
 class TextMailer(Dict):
     """create and send text email using templates. Parameters (*=required):
@@ -15,16 +16,15 @@ class TextMailer(Dict):
             host        : The address of the mail host
             port        : The port the host is listening on
             from_address: The default From address
-            to_address  : The default To address
             delivery    : 'smtp' sends it, 'test' returns the rendered message 
             username    : username for smtp auth
             password    : password for smtp auth
             debug       : Whether debugging is on
     """
 
-    def __init__(self, loader_class=None, loader_args={}, log=Log(), **Email):
+    def __init__(self, loader_class=None, loader_args={}, **Email):
         """set up an emailer with a particular Email config"""
-        Dict.__init__(self, log=log, **Email)
+        Dict.__init__(self, **Email)
         if loader_class is None:
             from tornado.template import Loader as loader_class
         if Email.get('template_path') is not None:
@@ -50,7 +50,8 @@ class TextMailer(Dict):
         """create a MIMEText message from the msg text with the given msg args"""
         encoding = encoding or self.default_encoding or 'UTF-8'
         if template is not None:
-            text = self.render(template, to_addr=to_addr or self.to_address, from_addr=from_addr, cc=cc, bcc=bcc, **context)
+            text = self.render(template, 
+                to_addr=to_addr or self.to_address, from_addr=from_addr or self.from_address, cc=cc, bcc=bcc, **context)
         msg = MIMEText(text, 'plain', encoding)
         msg['From'] = from_addr or self.from_address
         msg['Subject'] = subject
@@ -62,7 +63,7 @@ class TextMailer(Dict):
             msg.add_header('Bcc', addr.strip())
         return msg
 
-    def send_message(self, template, to_addr=None, subject=None, from_addr=None, cc=None, bcc=None, **context):
+    def send_message(self, template, from_addr=None, to_addr=None, subject=None, cc=None, bcc=None, **context):
         return self.send(
             self.message(template=template,
                 to_addr=to_addr, from_addr=from_addr, cc=cc, bcc=bcc, subject=subject, **context))
@@ -79,7 +80,6 @@ class TextMailer(Dict):
         elif self.delivery == 'smtp':
             # parse the message and send it
             fromaddr = msg['From']
-            if self.debug==True: self.log("From =", fromaddr)
             tolist = [addr for addr in
                       (msg.get_all('To') or []) 
                       + (msg.get_all('Cc') or []) 
@@ -94,12 +94,8 @@ class TextMailer(Dict):
                 if self.username is not None and self.password is not None:
                     smtpclient.login(self.username, self.password)
                 for toaddr in tolist:
-                    if self.debug==True: self.log("To =", toaddr)
                     smtpclient.sendmail(fromaddr, toaddr, msg.as_string())
                 smtpclient.quit()
             except:
-                if self.debug==True: 
-                    self.log(traceback.format_exc())
-                else:
-                    self.log("Emailer exception:", sys.exc_info()[1], file=sys.stderr)
+                log.error(traceback.format_exc())
                 return sys.exc_info()[1]        # return the exception rather than raising it -- the show must go on.        
