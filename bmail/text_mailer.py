@@ -29,9 +29,7 @@ class TextMailer(Dict):
             from tornado.template import Loader as loader_class
         if Email.get('template_path') is not None:
             self.loader = loader_class(Email.get('template_path'), **loader_args)
-        if self.delivery=='test' and self.default_encoding is None:
-            self.default_encoding = 'ASCII'
-        else:
+        if self.default_encoding is None:
             self.default_encoding = 'UTF-8'
 
     def __repr__(self):
